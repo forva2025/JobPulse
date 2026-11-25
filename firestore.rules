@@ -1,0 +1,199 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    function isValidSource(data, userId) {
+      return data.userId is string && data.userId == userId &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+        data.url is string && data.url.size() >= 10 && data.url.size() <= 500 && data.url.matches('^https://.*') &&
+        data.category is string && data.category in ['AI_TALENT', 'TECH_BOARD', 'ATS_API', 'RSS_FEED', 'CUSTOM'] &&
+        data.enabled is bool &&
+        data.pollIntervalSeconds is int && data.pollIntervalSeconds >= 10 && data.pollIntervalSeconds <= 3600 &&
+        data.lastStatus is string && data.lastStatus in ['IDLE', 'LIVE', 'ERROR'] &&
+        data.lastLatencyMs is int && data.lastLatencyMs >= 0 && data.lastLatencyMs <= 600000 &&
+        data.lastJobCount is int && data.lastJobCount >= 0 && data.lastJobCount <= 100000 &&
+        (!('lastError' in data) || (data.lastError is string && data.lastError.size() <= 300)) &&
+        (!('etag' in data) || (data.etag is string && data.etag.size() <= 300)) &&
+        (!('lastModifiedHeader' in data) || (data.lastModifiedHeader is string && data.lastModifiedHeader.size() <= 200)) &&
+        (!('lastCheckedAt' in data) || isValidTimestamp(data.lastCheckedAt)) &&
+        isValidTimestamp(data.createdAt) &&
+        isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidFilter(data, userId) {
+      return data.userId is string && data.userId == userId &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+        data.enabled is bool &&
+        data.matchMode is string && data.matchMode in ['ANY', 'ALL'] &&
+        data.includeKeywords is list && data.includeKeywords.size() <= 25 &&
+        (data.includeKeywords.size() == 0 || data.includeKeywords[0] is string) &&
+        data.excludeKeywords is list && data.excludeKeywords.size() <= 25 &&
+        (data.excludeKeywords.size() == 0 || data.excludeKeywords[0] is string) &&
+        data.workMode is string && data.workMode in ['ANY', 'REMOTE', 'CONTRACT', 'FULL_TIME'] &&
+        data.minHourlyRate is int && data.minHourlyRate >= 0 && data.minHourlyRate <= 10000 &&
+        data.targetSourceIds is list && data.targetSourceIds.size() <= 30 &&
+        (data.targetSourceIds.size() == 0 || data.targetSourceIds[0] is string) &&
+        data.instantPush is bool &&
+        isValidTimestamp(data.createdAt) &&
+        isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidAlert(data, userId) {
+      return data.userId is string && data.userId == userId &&
+        data.sourceId is string && data.sourceId.size() >= 1 && data.sourceId.size() <= 128 &&
+        data.sourceName is string && data.sourceName.size() >= 1 && data.sourceName.size() <= 80 &&
+        data.fingerprint is string && data.fingerprint.size() >= 1 && data.fingerprint.size() <= 128 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.company is string && data.company.size() >= 1 && data.company.size() <= 100 &&
+        data.location is string && data.location.size() <= 120 &&
+        data.compensation is string && data.compensation.size() <= 80 &&
+        data.jobUrl is string && data.jobUrl.size() >= 10 && data.jobUrl.size() <= 1000 && data.jobUrl.matches('^https?://.*') &&
+        data.matchedFilterNames is list && data.matchedFilterNames.size() <= 20 &&
+        (data.matchedFilterNames.size() == 0 || data.matchedFilterNames[0] is string) &&
+        data.detectionLatencyMs is int && data.detectionLatencyMs >= 0 && data.detectionLatencyMs <= 600000 &&
+        data.freshAlert is bool &&
+        data.bookmarked is bool &&
+        data.read is bool &&
+        data.applied is bool &&
+        isValidTimestamp(data.createdAt) &&
+        isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId}/sources/{sourceId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(sourceId);
+
+      allow create: if isOwner(userId) &&
+        isValidId(sourceId) &&
+        incoming().keys().hasAll([
+          'userId', 'name', 'url', 'category', 'enabled',
+          'pollIntervalSeconds', 'lastStatus', 'lastLatencyMs', 'lastJobCount',
+          'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId', 'name', 'url', 'category', 'enabled',
+          'pollIntervalSeconds', 'lastStatus', 'lastLatencyMs', 'lastJobCount',
+          'lastError', 'etag', 'lastModifiedHeader', 'lastCheckedAt',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidSource(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+        isValidId(sourceId) &&
+        isValidSource(incoming(), userId) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name', 'url', 'category', 'enabled', 'pollIntervalSeconds', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'lastStatus', 'lastLatencyMs', 'lastJobCount', 'lastError',
+            'etag', 'lastModifiedHeader', 'lastCheckedAt', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isOwner(userId) && isValidId(sourceId);
+    }
+
+    match /users/{userId}/filters/{filterId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(filterId);
+
+      allow create: if isOwner(userId) &&
+        isValidId(filterId) &&
+        incoming().keys().hasAll([
+          'userId', 'name', 'enabled', 'matchMode', 'includeKeywords',
+          'excludeKeywords', 'workMode', 'minHourlyRate', 'targetSourceIds',
+          'instantPush', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId', 'name', 'enabled', 'matchMode', 'includeKeywords',
+          'excludeKeywords', 'workMode', 'minHourlyRate', 'targetSourceIds',
+          'instantPush', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidFilter(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+        isValidId(filterId) &&
+        isValidFilter(incoming(), userId) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'enabled', 'matchMode', 'includeKeywords', 'excludeKeywords',
+          'workMode', 'minHourlyRate', 'targetSourceIds', 'instantPush', 'updatedAt'
+        ]);
+
+      allow delete: if isOwner(userId) && isValidId(filterId);
+    }
+
+    match /users/{userId}/alerts/{alertId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(alertId);
+
+      allow create: if isOwner(userId) &&
+        isValidId(alertId) &&
+        incoming().keys().hasAll([
+          'userId', 'sourceId', 'sourceName', 'fingerprint', 'title',
+          'company', 'location', 'compensation', 'jobUrl', 'matchedFilterNames',
+          'detectionLatencyMs', 'freshAlert', 'bookmarked', 'read', 'applied',
+          'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId', 'sourceId', 'sourceName', 'fingerprint', 'title',
+          'company', 'location', 'compensation', 'jobUrl', 'matchedFilterNames',
+          'detectionLatencyMs', 'freshAlert', 'bookmarked', 'read', 'applied',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidAlert(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+        isValidId(alertId) &&
+        isValidAlert(incoming(), userId) &&
+        incoming().userId == existing().userId &&
+        incoming().sourceId == existing().sourceId &&
+        incoming().fingerprint == existing().fingerprint &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'bookmarked', 'read', 'applied', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'matchedFilterNames', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isOwner(userId) && isValidId(alertId);
+    }
+  }
+}

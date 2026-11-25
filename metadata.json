@@ -1,0 +1,6 @@
+{
+  "name": "JobPulse",
+  "description": "Low-latency job board monitor for Mercor, micro1, Turing, TELUS Digital, and custom career sites with instant push alerts and custom filters.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

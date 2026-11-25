@@ -1,0 +1,98 @@
+<resources>
+    <string name="app_name">JobPulse</string>
+    <string name="tagline">Sub-second job radar for Mercor, micro1, Turing, TELUS Digital, and any career site.</string>
+
+    <!-- Auth -->
+    <string name="auth_title">JobPulse</string>
+    <string name="auth_subtitle">Instant low-latency push alerts the second a role drops on Mercor, micro1, Turing, TELUS Digital, or your custom boards.</string>
+    <string name="auth_sign_in_google">Sign in with Google</string>
+    <string name="auth_sync_note">Your monitored websites, custom filters, and saved roles sync securely across devices.</string>
+    <string name="auth_sign_out">Sign out</string>
+    <string name="auth_error_missing_config">Google Sign-In configuration is missing.</string>
+
+    <!-- Navigation -->
+    <string name="nav_feed">Pulse</string>
+    <string name="nav_sites">Sites</string>
+    <string name="nav_filters">Filters</string>
+    <string name="nav_radar">Radar</string>
+
+    <!-- Feed -->
+    <string name="feed_title">Live Job Pulse</string>
+    <string name="feed_scan_now">Scan Now</string>
+    <string name="feed_scanning">Scanning…</string>
+    <string name="feed_search_hint">Search roles, companies, or skills…</string>
+    <string name="feed_filter_all">All</string>
+    <string name="feed_filter_fresh">New Drops</string>
+    <string name="feed_filter_matched">Filter Match</string>
+    <string name="feed_filter_saved">Saved</string>
+    <string name="feed_filter_applied">Applied</string>
+    <string name="feed_empty_title">Radar is primed and ready</string>
+    <string name="feed_empty_body">Add Mercor, micro1, Turing, TELUS Digital, or any custom career site, then tap Scan Now or turn on Live Radar.</string>
+    <string name="feed_open_job">Open &amp; Apply</string>
+    <string name="feed_mark_applied">Mark Applied</string>
+    <string name="feed_applied_badge">Applied</string>
+    <string name="feed_fresh_badge">NEW DROP</string>
+    <string name="feed_baseline_badge">BASELINE</string>
+
+    <!-- Sites -->
+    <string name="sites_title">Monitored Websites</string>
+    <string name="sites_add_custom">Add Site</string>
+    <string name="sites_quick_presets">Popular AI &amp; Tech Boards</string>
+    <string name="sites_quick_add_all">Add Core 4 (Mercor, micro1, Turing, TELUS)</string>
+    <string name="sites_empty_title">No websites monitored yet</string>
+    <string name="sites_empty_body">Pick a preset board below or add any HTTPS career page, ATS board, or RSS feed.</string>
+    <string name="sites_dialog_add_title">Add Job Website</string>
+    <string name="sites_dialog_edit_title">Edit Job Website</string>
+    <string name="sites_name_label">Website Name</string>
+    <string name="sites_url_label">Career Board URL (HTTPS)</string>
+    <string name="sites_category_label">Board Type</string>
+    <string name="sites_interval_label">Poll Cadence</string>
+    <string name="sites_url_error">Enter a valid public HTTPS URL (e.g. https://work.mercor.com/explore).</string>
+
+    <!-- Filters -->
+    <string name="filters_title">Custom Alert Filters</string>
+    <string name="filters_add">New Filter</string>
+    <string name="filters_empty_title">No custom filters yet</string>
+    <string name="filters_empty_body">Without filters, every brand-new job triggers an alert. Add keyword, hourly rate, or remote-only filters to focus on high-signal drops.</string>
+    <string name="filters_dialog_add_title">Create Alert Filter</string>
+    <string name="filters_dialog_edit_title">Edit Alert Filter</string>
+    <string name="filters_name_label">Filter Name</string>
+    <string name="filters_include_label">Include Keywords (comma-separated)</string>
+    <string name="filters_exclude_label">Exclude Keywords (comma-separated)</string>
+    <string name="filters_min_rate_label">Min Hourly Rate (USD/hr, 0 = any)</string>
+    <string name="filters_match_mode_label">Keyword Match Mode</string>
+    <string name="filters_work_mode_label">Work Mode</string>
+    <string name="filters_instant_push_label">High-Priority Instant Push Alert</string>
+    <string name="filters_instant_push_desc">Break through with heads-up banner, sound, and vibration immediately on match.</string>
+
+    <!-- Radar / Settings -->
+    <string name="radar_title">Low-Latency Radar</string>
+    <string name="radar_live_mode">Live Background Radar</string>
+    <string name="radar_live_desc">Runs a low-latency foreground sync engine with ETag conditional polling so new roles alert within seconds.</string>
+    <string name="radar_cadence_title">Default Polling Cadence</string>
+    <string name="radar_notif_title">Push Notification Priority</string>
+    <string name="radar_notif_granted">Heads-up push alerts enabled</string>
+    <string name="radar_notif_denied">Notification permission required for instant alerts</string>
+    <string name="radar_notif_enable">Enable Alerts</string>
+    <string name="radar_test_alert">Send Test Push Alert</string>
+    <string name="radar_test_alert_sent">High-priority test notification dispatched!</string>
+    <string name="radar_account_title">Synced Account</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_alerts_name">Instant Job Drops</string>
+    <string name="notif_channel_alerts_desc">High-priority low-latency notifications fired the second a matching job is detected.</string>
+    <string name="notif_channel_radar_name">Live Radar Service</string>
+    <string name="notif_channel_radar_desc">Persistent low-noise indicator while JobPulse actively monitors websites.</string>
+
+    <!-- Common -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+    <string name="cd_bookmark">Toggle bookmark</string>
+    <string name="cd_delete">Delete item</string>
+    <string name="cd_edit">Edit item</string>
+    <string name="cd_scan_site">Scan website now</string>
+    <string name="cd_open_external">Open job link in browser</string>
+    <string name="cd_hero_radar">JobPulse live radar signal graphic</string>
+</resources>

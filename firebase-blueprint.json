@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "MonitoredSource": {
+      "title": "MonitoredSource",
+      "description": "A user-configured job listing website or feed monitored by JobPulse for low-latency posting alerts.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID." },
+        "name": { "type": "string", "description": "Display label for the job board (e.g., Mercor, micro1, Turing, TELUS Digital)." },
+        "url": { "type": "string", "description": "HTTPS URL of the career board, ATS endpoint, or RSS feed." },
+        "category": {
+          "type": "string",
+          "enum": ["AI_TALENT", "TECH_BOARD", "ATS_API", "RSS_FEED", "CUSTOM"],
+          "description": "Classification of the monitored website."
+        },
+        "enabled": { "type": "boolean", "description": "Whether live polling is enabled for this website." },
+        "pollIntervalSeconds": { "type": "integer", "description": "Target low-latency check interval in seconds (10-3600)." },
+        "lastStatus": {
+          "type": "string",
+          "enum": ["IDLE", "LIVE", "ERROR"],
+          "description": "Most recent HTTP check status."
+        },
+        "lastLatencyMs": { "type": "integer", "description": "Most recent HTTP response latency in milliseconds." },
+        "lastJobCount": { "type": "integer", "description": "Number of job postings discovered on the last scan." },
+        "lastError": { "type": "string", "description": "Optional error summary if the most recent fetch failed." },
+        "etag": { "type": "string", "description": "Optional HTTP ETag header for low-latency conditional requests." },
+        "lastModifiedHeader": { "type": "string", "description": "Optional HTTP Last-Modified header for conditional requests." },
+        "lastCheckedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional server timestamp of the last scan (FieldValue.serverTimestamp())."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "url",
+        "category",
+        "enabled",
+        "pollIntervalSeconds",
+        "lastStatus",
+        "lastLatencyMs",
+        "lastJobCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomFilter": {
+      "title": "CustomFilter",
+      "description": "A user-defined filter rule controlling which newly detected jobs trigger instant push alerts.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID." },
+        "name": { "type": "string", "description": "Name of the filter rule." },
+        "enabled": { "type": "boolean", "description": "Whether this filter rule is active." },
+        "matchMode": {
+          "type": "string",
+          "enum": ["ANY", "ALL"],
+          "description": "Whether any or all includeKeywords must match."
+        },
+        "includeKeywords": { "type": "array", "description": "Keywords that must match the job title, company, or metadata." },
+        "excludeKeywords": { "type": "array", "description": "Negative keywords that disqualify a job listing." },
+        "workMode": {
+          "type": "string",
+          "enum": ["ANY", "REMOTE", "CONTRACT", "FULL_TIME"],
+          "description": "Preferred employment or work location mode."
+        },
+        "minHourlyRate": { "type": "integer", "description": "Minimum USD hourly rate threshold (0 means no minimum)." },
+        "targetSourceIds": { "type": "array", "description": "Optional list of MonitoredSource IDs; empty applies to all sites." },
+        "instantPush": { "type": "boolean", "description": "Whether matching postings trigger high-priority heads-up push notifications." },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "enabled",
+        "matchMode",
+        "includeKeywords",
+        "excludeKeywords",
+        "workMode",
+        "minHourlyRate",
+        "targetSourceIds",
+        "instantPush",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "JobAlert": {
+      "title": "JobAlert",
+      "description": "A job listing detected from a monitored website and persisted for user review, bookmarking, and application tracking.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID." },
+        "sourceId": { "type": "string", "description": "ID of the MonitoredSource where this job was detected." },
+        "sourceName": { "type": "string", "description": "Display name of the source website." },
+        "fingerprint": { "type": "string", "description": "Deterministic SHA-256 fingerprint preventing duplicate alerts." },
+        "title": { "type": "string", "description": "Job listing title." },
+        "company": { "type": "string", "description": "Hiring company or platform." },
+        "location": { "type": "string", "description": "Location or remote indicator." },
+        "compensation": { "type": "string", "description": "Extracted hourly rate or salary string." },
+        "jobUrl": { "type": "string", "description": "Direct HTTPS/HTTP link to the job listing." },
+        "matchedFilterNames": { "type": "array", "description": "Names of custom filters matched by this job." },
+        "detectionLatencyMs": { "type": "integer", "description": "Fetch and parse latency in milliseconds when detected." },
+        "freshAlert": { "type": "boolean", "description": "True when detected as a brand-new posting after initial baseline." },
+        "bookmarked": { "type": "boolean", "description": "Whether the user bookmarked this job." },
+        "read": { "type": "boolean", "description": "Whether the user has viewed this alert." },
+        "applied": { "type": "boolean", "description": "Whether the user marked this job as applied." },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Detection server timestamp (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "sourceId",
+        "sourceName",
+        "fingerprint",
+        "title",
+        "company",
+        "location",
+        "compensation",
+        "jobUrl",
+        "matchedFilterNames",
+        "detectionLatencyMs",
+        "freshAlert",
+        "bookmarked",
+        "read",
+        "applied",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/sources/{sourceId}": {
+      "schema": { "$ref": "#/entities/MonitoredSource" },
+      "description": "User-owned job websites monitored for instant job alerts."
+    },
+    "/users/{userId}/filters/{filterId}": {
+      "schema": { "$ref": "#/entities/CustomFilter" },
+      "description": "User-owned custom keyword, rate, and work-mode alert filters."
+    },
+    "/users/{userId}/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/JobAlert" },
+      "description": "User-owned detected job postings and saved application status."
+    }
+  }
+}
